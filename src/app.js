@@ -49,15 +49,15 @@ app.post("/sign-up", (req, res) => {
 });
 
 app.post("/tweets", (req, res) => {
-  const { username } = req.headers;
+  const { user } = req.headers;
   const { tweet } = req.body;
-  const i = users.findIndex(el => el.username === username);
+  const i = users.findIndex(el => el.username === user);
   if (i === -1) {
     res.status(401).send("UNAUTHORIZED");
-  } else if (!tweet || !username || typeof username !== "string" || typeof tweet !== "string") {
+  } else if (!tweet || !user || typeof user !== "string" || typeof tweet !== "string") {
     res.status(400).send("Todos os campos são obrigatórios");
   } else {
-    const newObj = { username: username, avatar: users[i].avatar, tweet: tweet };
+    const newObj = { username: user, avatar: users[i].avatar, tweet: tweet };
     tweets.push(newObj);
     res.status(201).send("OK");
   }
