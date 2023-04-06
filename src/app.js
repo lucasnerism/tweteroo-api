@@ -1,43 +1,65 @@
 import express from "express";
 import cors from "cors";
-import bodyParser from "body-parser";
 
 const app = express();
 
 app.use(cors());
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(express.json());
 
-let users = [];
-let tweets = [];
+const users = [];
+const tweets = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41];
 
-app.get("/tweets", (req, resp) => {
-  resp.send(tweets.slice(-10));
+app.get("/tweets", (req, res) => {
+  let page = req.query.page;
+  const maxPage = Math.ceil(tweets.length / 10);
+  if (Number(page) < 1) {
+    res.status(400).send("Informe uma página válida");
+    return;
+  }
+  if (Number(page) > maxPage) {
+    res.send([]);
+    return;
+  }
+  if (page === undefined) {
+    page = 1;
+  }
+  const initial = page * (-10);
+  const final = tweets.length - ((page - 1) * 10);
+  res.send(tweets.slice(initial, final));
 });
 
-app.get("/users", (req, resp) => {
-  resp.send(users);
+app.get("/users", (req, res) => {
+  res.send(users);
 });
 
-app.post("/sign-up", (req, resp) => {
+app.get("/tweets/:username", (req, res) => {
+  const { username } = req.params;
+  const userTweets = tweets.filter(el => el.username === username);
+  res.send(userTweets);
+});
+
+app.post("/sign-up", (req, res) => {
   const data = req.body;
   if (data.username && data.avatar && typeof data.username === "string" && typeof data.avatar === "string") {
     users.push(data);
-    resp.status(201).send("OK");
+    res.status(201).send("OK");
   } else {
-    resp.status(400).send({ message: "Todos os campos são obrigatórios" });
+    res.status(400).send("Todos os campos são obrigatórios");
   }
 });
 
-app.post("/tweets", (req, resp) => {
-  const data = req.body;
-  const i = users.findIndex(el => el.username === data.username);
+app.post("/tweets", (req, res) => {
+  const { username } = req.headers;
+  const { tweet } = req.body;
+  const i = users.findIndex(el => el.username === username);
   if (i === -1) {
-    resp.status(401).send("UNAUTHORIZED");
+    res.status(401).send("UNAUTHORIZED");
+  } else if (!tweet || !username || typeof username !== "string" || typeof tweet !== "string") {
+    res.status(400).send("Todos os campos são obrigatórios");
   } else {
-    const newObj = { username: data.username, avatar: users[i].avatar, tweet: data.tweet };
+    const newObj = { username: username, avatar: users[i].avatar, tweet: tweet };
     tweets.push(newObj);
-    resp.status(201).send("OK");
+    res.status(201).send("OK");
   }
 
 });
